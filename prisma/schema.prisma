@@ -31,14 +31,15 @@ enum AttemptStatus {
 }
 
 model AdminUser {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  role         String   @default("admin") // admin | editor (extensível)
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                String   @id @default(cuid())
+  name              String
+  email             String   @unique
+  passwordHash      String
+  role              String   @default("admin") // admin | editor (extensível)
+  isActive          Boolean  @default(true)
+  mustChangePassword Boolean @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   auditLogs AuditLog[]
 

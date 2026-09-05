@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import LogoutButton from "./LogoutButton";
 import { EloceLogo } from "@/components/EloceLogo";
+import { getAdminSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 const MENU = [
   { href: "/admin", label: "Dashboard" },
@@ -11,10 +14,25 @@ const MENU = [
   { href: "/admin/perfis", label: "Perfis DISC" },
   { href: "/admin/relatorios", label: "Relatórios" },
   { href: "/admin/simulador", label: "Simular resultado" },
+  { href: "/admin/usuarios", label: "Usuários" },
   { href: "/admin/configuracoes", label: "Configurações" },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  // Middleware já garante que existe uma sessão válida para chegar aqui.
+  // Aqui verificamos, a cada carregamento, se o usuário precisa trocar a
+  // senha antes de ver qualquer outra tela do admin.
+  const session = await getAdminSession();
+  if (session) {
+    const user = await prisma.adminUser.findUnique({ where: { id: session.sub } });
+    if (user?.mustChangePassword) {
+      redirect("/admin/trocar-senha");
+    }
+    if (user && !user.isActive) {
+      redirect("/admin/login");
+    }
+  }
+
   return (
     <div className="flex min-h-screen bg-eloca-bg">
       <aside className="w-64 flex-shrink-0 bg-eloca-navy px-4 py-6 text-white">

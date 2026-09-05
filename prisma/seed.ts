@@ -204,10 +204,11 @@ async function main() {
     where: { email: adminEmail },
     update: {},
     create: {
-      name: "Administrador DISC Eloca",
+      name: process.env.ADMIN_SEED_NAME ?? "Administrador DISC Eloca",
       email: adminEmail,
       passwordHash,
       role: "admin",
+      mustChangePassword: false, // senha definida deliberadamente pelo próprio admin
     },
   });
   console.log(`Seed: admin garantido (${adminEmail})`);
