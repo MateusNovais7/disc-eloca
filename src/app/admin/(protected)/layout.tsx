@@ -20,11 +20,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="flex min-h-screen bg-eloca-bg">
       <aside className="w-64 flex-shrink-0 bg-eloca-navy px-4 py-6 text-white">
-        <div className="mb-8 flex items-center gap-2 px-2">
-          <EloceLogo variant="light" className="h-6 w-auto" />
-          <span className="rounded-full bg-eloca-green/20 px-2 py-0.5 text-xs font-bold text-eloca-green">
-            DISC
-          </span>
+        <div className="mb-8 px-2">
+          <EloceLogo variant="light" className="h-9 w-auto" />
         </div>
         <AdminNav />
         <div className="mt-8 px-2">

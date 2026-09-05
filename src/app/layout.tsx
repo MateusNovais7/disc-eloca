@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DISC Eloca | Perfil comportamental",
+  title: "Eloca DISC",
   description:
     "Conheça seu perfil comportamental DISC pela plataforma própria da Eloca.",
 };

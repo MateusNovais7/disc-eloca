@@ -2,30 +2,35 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const MENU = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/admin/testes", label: "Testes" },
-  { href: "/admin/perguntas", label: "Perguntas" },
-  { href: "/admin/resultados", label: "Resultados" },
-  { href: "/admin/participantes", label: "Participantes" },
-  { href: "/admin/perfis", label: "Perfis DISC" },
-  { href: "/admin/relatorios", label: "Relatórios" },
-  { href: "/admin/simulador", label: "Simular resultado" },
-  { href: "/admin/usuarios", label: "Usuários" },
-  { href: "/admin/configuracoes", label: "Configurações" },
+  { href: "/admin", label: "Dashboard", adminOnly: false },
+  { href: "/admin/testes", label: "Testes", adminOnly: true },
+  { href: "/admin/perguntas", label: "Perguntas", adminOnly: true },
+  { href: "/admin/resultados", label: "Resultados", adminOnly: false },
+  { href: "/admin/participantes", label: "Participantes", adminOnly: false },
+  { href: "/admin/perfis", label: "Perfis DISC", adminOnly: true },
+  { href: "/admin/relatorios", label: "Relatórios", adminOnly: false },
+  { href: "/admin/simulador", label: "Simular resultado", adminOnly: true },
+  { href: "/admin/usuarios", label: "Usuários", adminOnly: true },
+  { href: "/admin/configuracoes", label: "Configurações", adminOnly: true },
 ];
 
 export default function AdminNav() {
   const pathname = usePathname();
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/me").then((r) => (r.ok ? r.json() : null)).then((d) => setRole(d?.user?.role ?? null));
+  }, []);
+
+  const visibleMenu = MENU.filter((item) => !item.adminOnly || role === "admin");
 
   return (
     <nav className="flex flex-col gap-1">
-      {MENU.map((item) => {
-        // "/admin" só fica ativo na rota exata; as demais casam por prefixo
-        // (ex: /admin/perguntas?assessmentId=... continua destacando "Perguntas").
-        const isActive =
-          item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
+      {visibleMenu.map((item) => {
+        const isActive = item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
         return (
           <Link
             key={item.href}
