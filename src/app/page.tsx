@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { EloceLogo } from "@/components/EloceLogo";
 
 export const dynamic = "force-dynamic";
 
@@ -11,10 +12,11 @@ export default async function LandingPage() {
 
   return (
     <main className="min-h-screen bg-eloca-bg">
-      <header className="border-b border-eloca-border bg-eloca-navy">
+      <header className="border-b border-eloca-border bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <span className="text-xl font-bold text-white">
-            ELOCA <span className="text-eloca-green">DISC</span>
+          <EloceLogo variant="dark" className="h-8 w-auto" />
+          <span className="rounded-full bg-eloca-green/10 px-3 py-1 text-xs font-bold text-eloca-greenDark">
+            DISC
           </span>
         </div>
       </header>
@@ -26,6 +28,9 @@ export default async function LandingPage() {
         <h1 className="text-4xl font-extrabold text-eloca-navy sm:text-5xl">
           DISC Eloca
         </h1>
+        <p className="mt-2 text-sm font-medium text-eloca-muted">
+          Transform<span className="text-eloca-green">ação</span> de dentro para fora
+        </p>
         <p className="mt-6 text-lg text-eloca-muted">
           Conheça melhor sua tendência comportamental e sua forma de se
           comunicar, decidir e trabalhar.

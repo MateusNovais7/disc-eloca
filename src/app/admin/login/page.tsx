@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { EloceLogo } from "@/components/EloceLogo";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -31,9 +32,12 @@ export default function AdminLoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-eloca-navy px-6">
       <form onSubmit={submit} className="w-full max-w-sm rounded-xl2 bg-white p-8 shadow-lg">
-        <h1 className="text-xl font-bold text-eloca-navy">
-          ELOCA <span className="text-eloca-green">DISC</span> — Admin
-        </h1>
+        <div className="flex items-center gap-2">
+          <EloceLogo variant="dark" className="h-7 w-auto" />
+          <span className="rounded-full bg-eloca-green/10 px-2 py-0.5 text-xs font-bold text-eloca-greenDark">
+            DISC — Admin
+          </span>
+        </div>
         <div className="mt-6 flex flex-col gap-4">
           <input
             type="email"
