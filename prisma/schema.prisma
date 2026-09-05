@@ -1,0 +1,222 @@
+// DISC Eloca - Schema do banco de dados
+// Ver documentação de regras de negócio em docs/DISC_ENGINE.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProfileLetter {
+  D
+  I
+  S
+  C
+}
+
+enum AssessmentStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("admin") // admin | editor (extensível)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogs AuditLog[]
+
+  @@map("admin_users")
+}
+
+/// Uma versão de teste DISC (ex: "DISC Eloca - Versão 1")
+model Assessment {
+  id          String           @id @default(cuid())
+  name        String
+  description String?
+  version     Int              @default(1)
+  status      AssessmentStatus @default(DRAFT)
+  // configuração opcional, não ativada por padrão
+  shuffleQuestions Boolean     @default(false)
+  shuffleOptions   Boolean     @default(false)
+  requireDepartment Boolean    @default(false)
+  requireJobTitle   Boolean    @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  questions Question[]
+  attempts  AssessmentAttempt[]
+
+  @@index([status])
+  @@map("assessments")
+}
+
+model Question {
+  id           String     @id @default(cuid())
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  text         String
+  position     Int
+  active       Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  options Option[]
+  answers Answer[]
+
+  @@index([assessmentId, position])
+  @@map("questions")
+}
+
+model Option {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text       String
+  position   Int
+  // Pontuação independente por perfil (flexível: uma alternativa pode
+  // pontuar em mais de um perfil simultaneamente, ex: D=2, I=1)
+  scoreD     Int      @default(0)
+  scoreI     Int      @default(0)
+  scoreS     Int      @default(0)
+  scoreC     Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  answers Answer[]
+
+  @@index([questionId, position])
+  @@map("options")
+}
+
+model Participant {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  department String?
+  jobTitle   String?
+  createdAt  DateTime @default(now())
+
+  attempts AssessmentAttempt[]
+
+  @@index([email])
+  @@map("participants")
+}
+
+/// Uma tentativa/execução do teste por um participante.
+/// Histórico nunca é sobrescrito: o mesmo e-mail pode ter várias tentativas.
+model AssessmentAttempt {
+  id            String        @id @default(cuid())
+  assessmentId  String
+  assessment    Assessment    @relation(fields: [assessmentId], references: [id])
+  participantId String?
+  participant   Participant?  @relation(fields: [participantId], references: [id])
+  status        AttemptStatus @default(IN_PROGRESS)
+  startedAt     DateTime      @default(now())
+  completedAt   DateTime?
+  // permite recuperar a tentativa em caso de reload de página
+  resumeToken   String        @unique @default(cuid())
+  isSimulation  Boolean       @default(false) // tentativas do simulador não contam nos relatórios
+
+  answers Answer[]
+  result  Result?
+
+  @@index([assessmentId, status])
+  @@index([participantId])
+  @@map("assessment_attempts")
+}
+
+/// Snapshot da pontuação no momento da resposta.
+/// Se a alternativa for reconfigurada depois, o histórico NÃO muda.
+model Answer {
+  id            String             @id @default(cuid())
+  attemptId     String
+  attempt       AssessmentAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId    String
+  question      Question           @relation(fields: [questionId], references: [id])
+  optionId      String
+  option        Option             @relation(fields: [optionId], references: [id])
+  scoreDSnapshot Int
+  scoreISnapshot Int
+  scoreSSnapshot Int
+  scoreCSnapshot Int
+  answeredAt    DateTime           @default(now())
+
+  @@unique([attemptId, questionId])
+  @@map("answers")
+}
+
+model Result {
+  attemptId         String             @id
+  attempt           AssessmentAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  rawD              Int
+  rawI              Int
+  rawS              Int
+  rawC              Int
+  percentageD       Float
+  percentageI       Float
+  percentageS       Float
+  percentageC       Float
+  primaryProfile    ProfileLetter
+  secondaryProfile  ProfileLetter
+  combination       String  // ex: "D/C"
+  tieBreakApplied    Boolean @default(false)
+  createdAt         DateTime @default(now())
+
+  @@map("results")
+}
+
+model ProfileDescription {
+  profile              ProfileLetter @id
+  title                String
+  summary              String
+  strengths            String
+  attentionPoints      String
+  communicationStyle   String
+  howToCommunicate     String // "como prefere receber informações"
+  underPressure        String
+  decisionMaking       String
+  preferredEnvironment String
+  developmentTips      String
+  updatedAt            DateTime      @updatedAt
+
+  @@map("profile_descriptions")
+}
+
+model CombinedProfileDescription {
+  combination String   @id // ex: "D/C", "I/S" ...
+  content     String
+  updatedAt   DateTime @updatedAt
+
+  @@map("combined_profile_descriptions")
+}
+
+model AuditLog {
+  id          String    @id @default(cuid())
+  adminUserId String?
+  adminUser   AdminUser? @relation(fields: [adminUserId], references: [id])
+  action      String     // ex: "assessment.create", "option.score_update"
+  entityType  String
+  entityId    String?
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
