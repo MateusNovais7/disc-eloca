@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
+import { getAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
+  const session = await getAdminSession();
+  if (!session) return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
+
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
   const startOfMonth = new Date();
