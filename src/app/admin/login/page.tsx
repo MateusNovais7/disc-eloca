@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { EloceLogo } from "@/components/EloceLogo";
 
 export default function AdminLoginPage() {
@@ -32,9 +33,9 @@ export default function AdminLoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-eloca-navy px-6">
       <form onSubmit={submit} className="w-full max-w-sm rounded-xl2 bg-white p-8 shadow-lg">
-        <div className="flex items-center gap-2">
-          <EloceLogo variant="dark" className="h-7 w-auto" />
-          <span className="rounded-full bg-eloca-green/10 px-2 py-0.5 text-xs font-bold text-eloca-greenDark">
+        <div className="flex flex-col items-center">
+          <EloceLogo variant="dark" className="h-12 w-auto" />
+          <span className="mt-3 rounded-full bg-eloca-green/10 px-3 py-1 text-xs font-bold text-eloca-greenDark">
             DISC — Admin
           </span>
         </div>
@@ -60,6 +61,9 @@ export default function AdminLoginPage() {
         <button type="submit" disabled={loading} className="btn-primary mt-6 w-full">
           {loading ? "Entrando..." : "Entrar"}
         </button>
+        <Link href="/admin/esqueci-senha" className="mt-4 block text-center text-sm text-eloca-muted hover:text-eloca-navy">
+          Esqueceu a senha?
+        </Link>
       </form>
     </main>
   );

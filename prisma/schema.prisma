@@ -208,6 +208,18 @@ model CombinedProfileDescription {
   @@map("combined_profile_descriptions")
 }
 
+model PasswordResetToken {
+  id          String    @id @default(cuid())
+  adminUserId String
+  token       String    @unique
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([adminUserId])
+  @@map("password_reset_tokens")
+}
+
 model AuditLog {
   id          String    @id @default(cuid())
   adminUserId String?

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { ASSESSMENT_STATUS_LABELS, ASSESSMENT_STATUS_COLORS } from "@/lib/labels";
 
 interface AssessmentRow {
   id: string;
@@ -55,7 +56,9 @@ export default function TestesPage() {
               <td className="p-4">{a._count.questions}</td>
               <td className="p-4">{a._count.attempts}</td>
               <td className="p-4">
-                <span className="rounded-full bg-eloca-bg px-3 py-1 text-xs font-semibold">{a.status}</span>
+                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${ASSESSMENT_STATUS_COLORS[a.status]}`}>
+                  {ASSESSMENT_STATUS_LABELS[a.status] ?? a.status}
+                </span>
               </td>
               <td className="p-4">
                 <div className="flex gap-2">

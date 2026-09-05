@@ -9,7 +9,7 @@ interface UserRow {
 
 export default function UsuariosPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
-  const [form, setForm] = useState({ name: "", email: "" });
+  const [form, setForm] = useState({ firstName: "", lastName: "", email: "" });
   const [creating, setCreating] = useState(false);
   const [newCredential, setNewCredential] = useState<{ email: string; password: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -22,11 +22,15 @@ export default function UsuariosPage() {
   async function createUser(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim()) {
+      setError("Nome, sobrenome e e-mail são obrigatórios.");
+      return;
+    }
     setCreating(true);
     const res = await fetch("/api/admin/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ name: `${form.firstName.trim()} ${form.lastName.trim()}`, email: form.email }),
     });
     const data = await res.json();
     setCreating(false);
@@ -35,7 +39,7 @@ export default function UsuariosPage() {
       return;
     }
     setNewCredential({ email: data.user.email, password: data.temporaryPassword });
-    setForm({ name: "", email: "" });
+    setForm({ firstName: "", lastName: "", email: "" });
     load();
   }
 
@@ -57,8 +61,17 @@ export default function UsuariosPage() {
           Nome
           <input
             required
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            value={form.firstName}
+            onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+            className="rounded-lg border border-eloca-border px-3 py-2"
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          Sobrenome
+          <input
+            required
+            value={form.lastName}
+            onChange={(e) => setForm({ ...form, lastName: e.target.value })}
             className="rounded-lg border border-eloca-border px-3 py-2"
           />
         </label>

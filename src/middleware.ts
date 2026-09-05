@@ -3,9 +3,11 @@ import { jwtVerify } from "jose";
 
 const COOKIE_NAME = "disc_eloca_admin_session";
 
+const PUBLIC_ADMIN_PATHS = ["/admin/login", "/admin/esqueci-senha", "/admin/redefinir-senha"];
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  if (!pathname.startsWith("/admin") || pathname.startsWith("/admin/login")) {
+  if (!pathname.startsWith("/admin") || PUBLIC_ADMIN_PATHS.some((p) => pathname.startsWith(p))) {
     return NextResponse.next();
   }
 
